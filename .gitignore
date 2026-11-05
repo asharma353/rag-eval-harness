@@ -1,0 +1,18 @@
+# Hamel's copyrighted post text and everything derived from it
+data/
+traces/
+
+# Private notes: plans, brainstorm, local tool config
+_devnotes/
+tasks/
+.claude/
+
+.venv/
+__pycache__/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.pem
+*.key
+*.log

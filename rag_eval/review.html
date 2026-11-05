@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trace Review</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --ink: #1d1d1b; --muted: #6b6b66; --line: #e2e2dc;
+    --pass: #1f7a4d; --pass-bg: #e3f3ea; --fail: #b3261e; --fail-bg: #fbe7e5; --cite: #fff3c4; --accent: #2f5bd3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161615; --panel: #1f1f1d; --ink: #ececea; --muted: #a2a29c; --line: #33332f;
+      --pass: #6fd3a0; --pass-bg: #17362a; --fail: #ff8a80; --fail-bg: #3d1c19; --cite: #4a4120; --accent: #8fb0ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, sans-serif; }
+  header { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center;
+           padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  header b { font-size: 16px; }
+  .muted { color: var(--muted); }
+  .bar { flex: 1; min-width: 120px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 16px; max-width: 1500px; margin: 0 auto; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; min-width: 0; }
+  h2 { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .query { font-size: 19px; font-weight: 600; margin: 4px 0 10px; }
+  .tags span { display: inline-block; margin: 0 6px 6px 0; padding: 1px 8px; border: 1px solid var(--line); border-radius: 10px; font-size: 12px; color: var(--muted); }
+  .answer { white-space: pre-wrap; margin: 8px 0 12px; }
+  .answer a { background: var(--cite); color: inherit; text-decoration: none; padding: 0 3px; border-radius: 3px; cursor: pointer; }
+  .meta { font-size: 12px; color: var(--muted); }
+  .verdict { display: flex; gap: 8px; margin: 14px 0 8px; }
+  button { font: inherit; padding: 6px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+  button:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button.pass[aria-pressed="true"] { background: var(--pass-bg); border-color: var(--pass); color: var(--pass); font-weight: 600; }
+  button.fail[aria-pressed="true"] { background: var(--fail-bg); border-color: var(--fail); color: var(--fail); font-weight: 600; }
+  textarea { width: 100%; min-height: 110px; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+  .saved { font-size: 12px; color: var(--muted); height: 18px; }
+  .chunk { border-top: 1px solid var(--line); padding: 10px 0; }
+  .chunk:first-of-type { border-top: 0; }
+  .chunk.cited { background: linear-gradient(90deg, var(--cite) 0 4px, transparent 4px); padding-left: 12px; }
+  .chunk.flash { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .chunk .head { font-size: 13px; color: var(--muted); }
+  .chunk .head b { color: var(--ink); }
+  .chunk p { margin: 6px 0 0; font-size: 14px; }
+  kbd { font: 12px ui-monospace, monospace; padding: 0 4px; border: 1px solid var(--line); border-radius: 3px; }
+  .keys { font-size: 12px; color: var(--muted); }
+  .rubric { font-size: 13px; margin: 0 0 14px; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <b>Trace review</b>
+  <span id="pos" class="muted"></span>
+  <span id="progress"></span>
+  <div class="bar" aria-hidden="true"><i id="barfill"></i></div>
+  <label class="muted">Show
+    <select id="filter">
+      <option value="all">all</option>
+      <option value="unreviewed">unreviewed</option>
+      <option value="fail">fail</option>
+      <option value="pass">pass</option>
+    </select>
+  </label>
+  <span class="keys"><kbd>p</kbd> pass <kbd>f</kbd> fail <kbd>j</kbd>/<kbd>k</kbd> next/prev <kbd>n</kbd> note <kbd>Esc</kbd> leave note</span>
+</header>
+<main>
+  <section aria-label="Question and answer">
+    <div class="rubric" id="rubric" hidden></div>
+    <h2 id="qid">Question</h2>
+    <div class="query" id="query"></div>
+    <div class="tags" id="tags"></div>
+    <h2>Answer</h2>
+    <div class="answer" id="answer"></div>
+    <div class="meta" id="meta"></div>
+    <div class="verdict">
+      <button class="pass" id="btn-pass" aria-pressed="false">Pass (p)</button>
+      <button class="fail" id="btn-fail" aria-pressed="false">Fail (f)</button>
+      <button id="btn-prev">← Prev (k)</button>
+      <button id="btn-next">Next (j) →</button>
+    </div>
+    <label for="notes"><h2>Notes</h2></label>
+    <textarea id="notes" placeholder="What did you see, in your own words? Be specific: what is wrong, and which chunk or sentence shows it."></textarea>
+    <div class="saved" id="saved" aria-live="polite"></div>
+  </section>
+  <section aria-label="Retrieved chunks">
+    <h2>Retrieved chunks, best first</h2>
+    <div id="chunks"></div>
+  </section>
+</main>
+<script>
+let traces = [], labels = {}, view = [], i = 0, shownId = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+async function load() {
+  const data = await (await fetch("/api/traces")).json();
+  traces = data.traces; labels = data.labels;
+  document.title = `Trace Review · ${data.run}`;
+  if (data.rubric) {  // blind label set for one judge: show its rubric
+    $("rubric").innerHTML = `<b>Judge: ${esc(data.run)}.</b> ${esc(data.rubric.text)}`;
+    $("rubric").hidden = false;
+    $("notes").placeholder = data.rubric.placeholder;
+  }
+  applyFilter(false);
+}
+
+function verdictOf(t) { return labels[t.id] ? labels[t.id].verdict : null; }
+
+function applyFilter(keep = true) {
+  const f = $("filter").value;
+  const current = view[i];
+  view = traces.filter((t) => f === "all" || (f === "unreviewed" ? !verdictOf(t) : verdictOf(t) === f));
+  i = keep && current ? Math.max(0, view.indexOf(current)) : 0;
+  render();
+}
+
+function render() {
+  const done = traces.filter(verdictOf), fails = done.filter((t) => verdictOf(t) === "fail").length;
+  $("progress").textContent = `${done.length} of ${traces.length} reviewed · ${done.length - fails} pass · ${fails} fail`;
+  $("barfill").style.width = `${traces.length ? (100 * done.length) / traces.length : 0}%`;
+  const t = view[i];
+  $("pos").textContent = view.length ? `${i + 1} / ${view.length}` : "nothing to show";
+  if (!t) { ["query", "tags", "answer", "meta", "chunks"].forEach((id) => ($(id).innerHTML = "")); shownId = null; return; }
+
+  $("qid").textContent = `Question ${t.qid || ""}`;
+  $("query").textContent = t.query;
+  const tup = t.tuple || {};
+  $("tags").innerHTML = [tup.persona, tup.query_type, tup.scope, tup.source && `${tup.source} tuple`, tup.topic && `topic: ${tup.topic}`]
+    .filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join("");
+  $("answer").innerHTML = esc(t.answer).replace(/\[(\d+)\]/g, (m, n) => `<a data-n="${n}" title="Show chunk ${n}">[${n}]</a>`);
+  $("meta").textContent = [
+    t.declined ? "declined to answer" : `cites ${t.cited_chunk_ids.length} chunk(s)`,
+    t.bad_citations.length ? `bad citations: ${t.bad_citations.join(", ")}` : "",
+    t.model, t.latency_s && `${t.latency_s}s`, t.cost_usd && `$${t.cost_usd.toFixed(4)}`, `trace ${t.id}`,
+  ].filter(Boolean).join(" · ");
+
+  const cited = new Set(t.cited_chunk_ids);
+  $("chunks").innerHTML = t.retrieved.map((c) => `
+    <div class="chunk${cited.has(c.id) ? " cited" : ""}" id="chunk-${c.rank}">
+      <div class="head"><b>[${c.rank}]</b> ${esc(c.id)} · score ${c.score}${cited.has(c.id) ? " · cited" : ""}<br>
+        <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> › ${esc(c.heading || "Introduction")}</div>
+      <p>${esc(c.text)}</p>
+    </div>`).join("");
+
+  const v = verdictOf(t);
+  $("btn-pass").setAttribute("aria-pressed", v === "pass");
+  $("btn-fail").setAttribute("aria-pressed", v === "fail");
+  // Fill the notes box only when a different trace appears. A redraw after a save must not wipe
+  // a note that was typed while that save was in flight.
+  if (t.id !== shownId) { $("notes").value = labels[t.id] ? labels[t.id].notes : ""; shownId = t.id; }
+  $("saved").textContent = labels[t.id] ? `saved ${labels[t.id].labeled_at}` : "";
+}
+
+async function save(verdict) {
+  const t = view[i];
+  if (!t) return;
+  const prev = labels[t.id] || { verdict: null, notes: "" };
+  const rec = { trace_id: t.id, verdict: verdict === undefined ? prev.verdict : verdict, notes: $("notes").value };
+  if (rec.verdict === prev.verdict && rec.notes === prev.notes) return;
+  const r = await fetch("/api/label", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(rec) });
+  if (!r.ok) { $("saved").textContent = `NOT saved: ${(await r.json()).error}`; return; }
+  labels[t.id] = await r.json();
+  render();
+}
+
+async function setVerdict(v) {
+  const t = view[i];
+  if (!t) return;
+  await save(verdictOf(t) === v ? null : v);  // pressing the same key again clears the verdict
+}
+
+async function move(d) {
+  await save();
+  if (!view.length) return;
+  i = Math.min(view.length - 1, Math.max(0, i + d));
+  render();
+  window.scrollTo(0, 0);
+}
+
+// Every action waits for the one before it. Without this queue, a fast "j" then "f" marked the
+// old trace, because "f" ran while "j" was still saving.
+let queue = Promise.resolve();
+const run = (fn) => (queue = queue.then(fn).catch((err) => ($("saved").textContent = `Error: ${err}`)));
+
+$("btn-pass").onclick = () => run(() => setVerdict("pass"));
+$("btn-fail").onclick = () => run(() => setVerdict("fail"));
+$("btn-next").onclick = () => run(() => move(1));
+$("btn-prev").onclick = () => run(() => move(-1));
+$("filter").onchange = () => run(() => applyFilter());
+$("notes").addEventListener("blur", () => run(() => save()));
+$("answer").addEventListener("click", (e) => {
+  const n = e.target.dataset && e.target.dataset.n;
+  const el = n && $(`chunk-${n}`);
+  if (!el) return;
+  el.scrollIntoView({ behavior: "smooth", block: "center" });
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 1200);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA") { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.metaKey || e.ctrlKey || e.altKey || e.target.tagName === "SELECT") return;
+  // Focus at once, not through the queue: queued, it waited for a save while the first typed keys were lost.
+  if (e.key === "n") { e.preventDefault(); $("notes").focus(); return; }
+  const act = { p: () => setVerdict("pass"), f: () => setVerdict("fail"), j: () => move(1), ArrowRight: () => move(1),
+                k: () => move(-1), ArrowLeft: () => move(-1) }[e.key];
+  if (act) { e.preventDefault(); run(act); }
+});
+load();
+</script>
+</body>
+</html>

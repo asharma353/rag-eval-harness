@@ -1,0 +1,40 @@
+name: eval
+
+on:
+  push:
+  pull_request:
+  # The paid gate runs only on a manual start: about $0.73 a run, and it downloads Hamel's blog again.
+  # Start it when a prompt, the retriever, or the model changes.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Offline tests (free, no secrets)
+        run: for t in test_slice*.py; do uv run python "$t"; done
+
+  gate:
+    if: github.event_name == 'workflow_dispatch'
+    needs: offline
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+    # Traces hold Hamel's copyrighted text, so they are never uploaded as an artifact; the log has the report.
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Download the corpus
+        run: uv run python -m rag_eval.corpus
+      - name: Answer the 109 synthetic questions (about $0.70)
+        run: uv run python -m rag_eval.monitor ask --run ci
+      - name: Judge the answers with Jev (about $0.03)
+        run: uv run python -m rag_eval.monitor scan --run ci
+      - name: Gate on faithfulness and declines
+        run: uv run python -m rag_eval.monitor gate --run ci

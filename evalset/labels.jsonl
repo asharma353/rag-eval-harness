@@ -1,0 +1,68 @@
+{"trace_id": "1f42bb417be5", "qid": "q001", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:45:58+00:00"}
+{"trace_id": "85440e0b5325", "qid": "q002", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:46:50+00:00"}
+{"trace_id": "b1af8437e0af", "qid": "q003", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:48:24+00:00"}
+{"trace_id": "f639e59436ce", "qid": "q004", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:48:51+00:00"}
+{"trace_id": "f27df39ebb9e", "qid": "q005", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:49:39+00:00"}
+{"trace_id": "77bde7e5e62a", "qid": "q006", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:51:57+00:00"}
+{"trace_id": "15c248771ee1", "qid": "q007", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:53:16+00:00"}
+{"trace_id": "1f42bb417be5", "qid": "q001", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:27+00:00"}
+{"trace_id": "85440e0b5325", "qid": "q002", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:31+00:00"}
+{"trace_id": "b1af8437e0af", "qid": "q003", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:33+00:00"}
+{"trace_id": "f639e59436ce", "qid": "q004", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:37+00:00"}
+{"trace_id": "f27df39ebb9e", "qid": "q005", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:40+00:00"}
+{"trace_id": "77bde7e5e62a", "qid": "q006", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:42+00:00"}
+{"trace_id": "15c248771ee1", "qid": "q007", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:44+00:00"}
+{"trace_id": "f93eb0359d3d", "qid": "q008", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:54:46+00:00"}
+{"trace_id": "085d42407721", "qid": "q009", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:55:19+00:00"}
+{"trace_id": "8ed08ed60d27", "qid": "q010", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:55:56+00:00"}
+{"trace_id": "1419e1dd0ee6", "qid": "q011", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:56:46+00:00"}
+{"trace_id": "716af16859d5", "qid": "q012", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T01:57:53+00:00"}
+{"trace_id": "3e8101f3937b", "qid": "q013", "run": "baseline", "verdict": "fail", "notes": "", "labeled_at": "2026-10-30T01:59:21+00:00"}
+{"trace_id": "3e8101f3937b", "qid": "q013", "run": "baseline", "verdict": "fail", "notes": "retrieval: chunks 1 and 2 are never used in the response", "labeled_at": "2026-10-30T02:00:05+00:00"}
+{"trace_id": "e4625cff5c33", "qid": "q014", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:01:00+00:00"}
+{"trace_id": "abf445e34eba", "qid": "q015", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:02:14+00:00"}
+{"trace_id": "45b1b3be384e", "qid": "q016", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:03:00+00:00"}
+{"trace_id": "85e78e3316ca", "qid": "q017", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:05:26+00:00"}
+{"trace_id": "0d9a7d6d973a", "qid": "q018", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:05:59+00:00"}
+{"trace_id": "051f898b5c91", "qid": "q019", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:06:56+00:00"}
+{"trace_id": "4bf19586249c", "qid": "q020", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:07:24+00:00"}
+{"trace_id": "dd4bab910748", "qid": "q021", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:07:39+00:00"}
+{"trace_id": "ae8e54e4659a", "qid": "q022", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:08:01+00:00"}
+{"trace_id": "d2fabf9b6a02", "qid": "q023", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:08:31+00:00"}
+{"trace_id": "29cc4ecf2c50", "qid": "q024", "run": "baseline", "verdict": "fail", "notes": "", "labeled_at": "2026-10-30T02:09:01+00:00"}
+{"trace_id": "29cc4ecf2c50", "qid": "q024", "run": "baseline", "verdict": "fail", "notes": "retreival: failed to get the right chunks", "labeled_at": "2026-10-30T02:09:18+00:00"}
+{"trace_id": "fe65c597b43f", "qid": "q025", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:13:54+00:00"}
+{"trace_id": "e49f3a7fbe3a", "qid": "q026", "run": "baseline", "verdict": "fail", "notes": "", "labeled_at": "2026-10-30T02:14:11+00:00"}
+{"trace_id": "e49f3a7fbe3a", "qid": "q026", "run": "baseline", "verdict": "fail", "notes": "Retrieval: the right chunks are missing", "labeled_at": "2026-10-30T02:14:23+00:00"}
+{"trace_id": "78c53ca3751a", "qid": "q027", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:14:34+00:00"}
+{"trace_id": "c349577a687f", "qid": "q028", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:14:39+00:00"}
+{"trace_id": "fa1953b70ed9", "qid": "q029", "run": "baseline", "verdict": "fail", "notes": "", "labeled_at": "2026-10-30T02:14:50+00:00"}
+{"trace_id": "fa1953b70ed9", "qid": "q029", "run": "baseline", "verdict": "fail", "notes": "retrieval: missing the right chunks", "labeled_at": "2026-10-30T02:15:04+00:00"}
+{"trace_id": "10d5a8859b1d", "qid": "q030", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:15:10+00:00"}
+{"trace_id": "133e515d4ad2", "qid": "q031", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:15:15+00:00"}
+{"trace_id": "684564523cf7", "qid": "q032", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:15:28+00:00"}
+{"trace_id": "4eed8848e0ff", "qid": "q033", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:16:10+00:00"}
+{"trace_id": "35cd2800524e", "qid": "q034", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:16:45+00:00"}
+{"trace_id": "5552525249ad", "qid": "q035", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:17:31+00:00"}
+{"trace_id": "9b4cdf3bd9b5", "qid": "q036", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:18:04+00:00"}
+{"trace_id": "4474d8563039", "qid": "q037", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:18:30+00:00"}
+{"trace_id": "c088310446b0", "qid": "q038", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:18:48+00:00"}
+{"trace_id": "a211d56900d7", "qid": "q039", "run": "baseline", "verdict": "fail", "notes": "", "labeled_at": "2026-10-30T02:19:23+00:00"}
+{"trace_id": "a211d56900d7", "qid": "q039", "run": "baseline", "verdict": "fail", "notes": "the answer: it misuses good chunks", "labeled_at": "2026-10-30T02:19:36+00:00"}
+{"trace_id": "1730004d9050", "qid": "q040", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:20:37+00:00"}
+{"trace_id": "875ad172eed4", "qid": "q041", "run": "baseline", "verdict": "fail", "notes": "", "labeled_at": "2026-10-30T02:21:10+00:00"}
+{"trace_id": "875ad172eed4", "qid": "q041", "run": "baseline", "verdict": "fail", "notes": "the answer: doesn't cohesively knit the answer from the chunks", "labeled_at": "2026-10-30T02:21:36+00:00"}
+{"trace_id": "d38e7ae2bdf7", "qid": "q042", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:22:05+00:00"}
+{"trace_id": "f8ada9e74047", "qid": "q043", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:22:35+00:00"}
+{"trace_id": "d2251f549185", "qid": "q044", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:22:40+00:00"}
+{"trace_id": "bc8a827885cc", "qid": "q045", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:23:41+00:00"}
+{"trace_id": "bbf03d7faabf", "qid": "q046", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:24:07+00:00"}
+{"trace_id": "9d7bcf7498e5", "qid": "q047", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:24:42+00:00"}
+{"trace_id": "4c8098f18601", "qid": "q048", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:25:08+00:00"}
+{"trace_id": "cbe18495c192", "qid": "q049", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:25:36+00:00"}
+{"trace_id": "c6f1204791ba", "qid": "q050", "run": "baseline", "verdict": "pass", "notes": "", "labeled_at": "2026-10-30T02:25:56+00:00"}
+{"trace_id": "3e8101f3937b", "qid": "q013", "run": "baseline", "verdict": "pass", "notes": "retrieval: chunks 1 and 2 are never used in the response | Corpus check: the answer is correct and cites the right chunks [3][4]. Chunks 1 and 2 are noise (retrieval precision, slice 3).", "labeled_at": "2026-10-30T17:58:47+00:00", "labeled_by": "corpus check, accepted by the reviewer 2026-10-30"}
+{"trace_id": "29cc4ecf2c50", "qid": "q024", "run": "baseline", "verdict": "pass", "notes": "retreival: failed to get the right chunks | Corpus check: the blog never mentions Weights & Biases or experiment tracking, so the decline is correct.", "labeled_at": "2026-10-30T17:58:47+00:00", "labeled_by": "corpus check, accepted by the reviewer 2026-10-30"}
+{"trace_id": "e49f3a7fbe3a", "qid": "q026", "run": "baseline", "verdict": "pass", "notes": "Retrieval: the right chunks are missing | Corpus check: the blog never mentions LoRA or QLoRA, so the decline is correct.", "labeled_at": "2026-10-30T17:58:47+00:00", "labeled_by": "corpus check, accepted by the reviewer 2026-10-30"}
+{"trace_id": "1419e1dd0ee6", "qid": "q011", "run": "baseline", "verdict": "fail", "notes": "Retrieval miss: evals-faq#011 says 60-80% of development time goes to evals, but it ranks 7th, so the model declined.", "labeled_at": "2026-10-30T17:58:47+00:00", "labeled_by": "corpus check, accepted by the reviewer 2026-10-30"}
+{"trace_id": "d2251f549185", "qid": "q044", "run": "baseline", "verdict": "fail", "notes": "Over-decline: chunk 1 (evals-faq#064) says PMs and engineers can work together on error analysis, but the model declined.", "labeled_at": "2026-10-30T17:58:47+00:00", "labeled_by": "corpus check, accepted by the reviewer 2026-10-30"}

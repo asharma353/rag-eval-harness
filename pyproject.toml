@@ -1,0 +1,6 @@
+[project]
+name = "rag-eval-harness"
+version = "0.1.0"
+description = "A from-scratch RAG eval harness: readable metrics, validated judges."
+requires-python = ">=3.11"
+dependencies = []
