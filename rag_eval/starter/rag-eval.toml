@@ -1,0 +1,14 @@
+# Settings for this workspace. See AGENTS.md in the rag-eval-harness repository.
+
+[traces]
+# An answer that holds one of these phrases (case does not matter) counts as a decline,
+# unless its trace sets "declined" itself. Change them to match your system's decline message.
+decline_phrases = ["I cannot answer", "I can't answer", "I don't know", "do not answer this"]
+# Sentence judges check a sentence only against the passages it cites. The first group of this
+# pattern is the passage number (1 = the first passage). A sentence without a citation is
+# checked against all passages.
+citation_pattern = '\[(\d+)\]'
+
+[gate]
+# The gate fails when the system declines more than this share of answerable questions.
+max_decline_rate = 0.15

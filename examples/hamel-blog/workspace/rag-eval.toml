@@ -1,0 +1,9 @@
+# The Hamel blog case study as a workspace. See ../README.md.
+
+[traces]
+# The reference RAG writes "declined" into each trace, so no phrase is needed.
+decline_phrases = []
+citation_pattern = '\[(\d+)\]'
+
+[gate]
+max_decline_rate = 0.15

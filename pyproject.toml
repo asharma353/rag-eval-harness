@@ -1,6 +1,19 @@
 [project]
 name = "rag-eval-harness"
-version = "0.1.0"
-description = "A from-scratch RAG eval harness: readable metrics, validated judges."
+version = "0.2.0"
+description = "Measure how your RAG system fails: validated yes-or-no judges, corrected rates, and a CI gate. No eval platform."
 requires-python = ">=3.11"
 dependencies = []
+
+[project.optional-dependencies]
+pdf = ["pypdf>=5"]
+
+[project.scripts]
+rag-eval = "rag_eval.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["rag_eval"]

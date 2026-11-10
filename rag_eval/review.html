@@ -65,14 +65,13 @@
       <option value="pass">pass</option>
     </select>
   </label>
-  <span class="keys"><kbd>p</kbd> pass <kbd>f</kbd> fail <kbd>j</kbd>/<kbd>k</kbd> next/prev <kbd>n</kbd> note <kbd>Esc</kbd> leave note</span>
+  <span class="keys" id="keys"><kbd>p</kbd> pass <kbd>f</kbd> fail <kbd>j</kbd>/<kbd>k</kbd> next/prev <kbd>n</kbd> note <kbd>Esc</kbd> leave note</span>
 </header>
 <main>
   <section aria-label="Question and answer">
     <div class="rubric" id="rubric" hidden></div>
     <h2 id="qid">Question</h2>
     <div class="query" id="query"></div>
-    <div class="tags" id="tags"></div>
     <h2>Answer</h2>
     <div class="answer" id="answer"></div>
     <div class="meta" id="meta"></div>
@@ -83,32 +82,33 @@
       <button id="btn-next">Next (j) →</button>
     </div>
     <label for="notes"><h2>Notes</h2></label>
-    <textarea id="notes" placeholder="What did you see, in your own words? Be specific: what is wrong, and which chunk or sentence shows it."></textarea>
+    <textarea id="notes" placeholder="What did you see, in your own words? Be specific: what is wrong, and which passage or sentence shows it."></textarea>
     <div class="saved" id="saved" aria-live="polite"></div>
   </section>
-  <section aria-label="Retrieved chunks">
-    <h2>Retrieved chunks, best first</h2>
+  <section aria-label="Passages">
+    <h2>Passages the system retrieved, in its order</h2>
     <div id="chunks"></div>
   </section>
 </main>
 <script>
-let traces = [], labels = {}, view = [], i = 0, shownId = null;
+let traces = [], labels = {}, view = [], i = 0, shownId = null, citePattern = "";
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 async function load() {
   const data = await (await fetch("/api/traces")).json();
-  traces = data.traces; labels = data.labels;
-  document.title = `Trace Review · ${data.run}`;
-  if (data.rubric) {  // blind label set for one judge: show its rubric
-    $("rubric").innerHTML = `<b>Judge: ${esc(data.run)}.</b> ${esc(data.rubric.text)}`;
+  traces = data.traces; labels = data.labels; citePattern = data.citation_pattern;
+  document.title = `Trace Review · ${data.title}`;
+  if (data.judge) {  // labels for one judge: show its own definition, so the person and the judge use one rule
+    const j = data.judge;
+    $("rubric").innerHTML = `<b>Judge: ${esc(j.name)}.</b> ${esc(j.question)}<br>` +
+      `<b>Pass</b> when: ${esc(j.criteria.pass)}<br><b>Fail</b> when: ${esc(j.criteria.fail)}`;
     $("rubric").hidden = false;
-    $("notes").placeholder = data.rubric.placeholder;
   }
   applyFilter(false);
 }
 
-function verdictOf(t) { return labels[t.id] ? labels[t.id].verdict : null; }
+function verdictOf(t) { return labels[t.key] ? labels[t.key].verdict : null; }
 
 function applyFilter(keep = true) {
   const f = $("filter").value;
@@ -124,25 +124,17 @@ function render() {
   $("barfill").style.width = `${traces.length ? (100 * done.length) / traces.length : 0}%`;
   const t = view[i];
   $("pos").textContent = view.length ? `${i + 1} / ${view.length}` : "nothing to show";
-  if (!t) { ["query", "tags", "answer", "meta", "chunks"].forEach((id) => ($(id).innerHTML = "")); shownId = null; return; }
+  if (!t) { ["query", "answer", "meta", "chunks"].forEach((id) => ($(id).innerHTML = "")); shownId = null; return; }
 
-  $("qid").textContent = `Question ${t.qid || ""}`;
-  $("query").textContent = t.query;
-  const tup = t.tuple || {};
-  $("tags").innerHTML = [tup.persona, tup.query_type, tup.scope, tup.source && `${tup.source} tuple`, tup.topic && `topic: ${tup.topic}`]
-    .filter(Boolean).map((x) => `<span>${esc(x)}</span>`).join("");
-  $("answer").innerHTML = esc(t.answer).replace(/\[(\d+)\]/g, (m, n) => `<a data-n="${n}" title="Show chunk ${n}">[${n}]</a>`);
-  $("meta").textContent = [
-    t.declined ? "declined to answer" : `cites ${t.cited_chunk_ids.length} chunk(s)`,
-    t.bad_citations.length ? `bad citations: ${t.bad_citations.join(", ")}` : "",
-    t.model, t.latency_s && `${t.latency_s}s`, t.cost_usd && `$${t.cost_usd.toFixed(4)}`, `trace ${t.id}`,
-  ].filter(Boolean).join(" · ");
-
-  const cited = new Set(t.cited_chunk_ids);
-  $("chunks").innerHTML = t.retrieved.map((c) => `
-    <div class="chunk${cited.has(c.id) ? " cited" : ""}" id="chunk-${c.rank}">
-      <div class="head"><b>[${c.rank}]</b> ${esc(c.id)} · score ${c.score}${cited.has(c.id) ? " · cited" : ""}<br>
-        <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> › ${esc(c.heading || "Introduction")}</div>
+  $("qid").textContent = "Question";
+  $("query").textContent = t.question;
+  const pattern = new RegExp(citePattern, "g");
+  $("answer").innerHTML = esc(t.answer).replace(pattern, (m, n) => `<a data-n="${esc(n)}" title="Show passage ${esc(n)}">${m}</a>`);
+  const cited = new Set([...t.answer.matchAll(pattern)].map((m) => Number(m[1])));
+  $("meta").textContent = [t.declined ? "declined to answer" : `cites ${cited.size} passage(s)`, `trace ${t.key}`].join(" · ");
+  $("chunks").innerHTML = t.passages.map((c, k) => `
+    <div class="chunk${cited.has(k + 1) ? " cited" : ""}" id="chunk-${k + 1}">
+      <div class="head"><b>[${k + 1}]</b> ${esc(c.source)}${cited.has(k + 1) ? " · cited" : ""}</div>
       <p>${esc(c.text)}</p>
     </div>`).join("");
 
@@ -151,19 +143,19 @@ function render() {
   $("btn-fail").setAttribute("aria-pressed", v === "fail");
   // Fill the notes box only when a different trace appears. A redraw after a save must not wipe
   // a note that was typed while that save was in flight.
-  if (t.id !== shownId) { $("notes").value = labels[t.id] ? labels[t.id].notes : ""; shownId = t.id; }
-  $("saved").textContent = labels[t.id] ? `saved ${labels[t.id].labeled_at}` : "";
+  if (t.key !== shownId) { $("notes").value = labels[t.key] ? labels[t.key].notes : ""; shownId = t.key; }
+  $("saved").textContent = labels[t.key] ? `saved ${labels[t.key].labeled_at}` : "";
 }
 
 async function save(verdict) {
   const t = view[i];
   if (!t) return;
-  const prev = labels[t.id] || { verdict: null, notes: "" };
-  const rec = { trace_id: t.id, verdict: verdict === undefined ? prev.verdict : verdict, notes: $("notes").value };
+  const prev = labels[t.key] || { verdict: null, notes: "" };
+  const rec = { key: t.key, verdict: verdict === undefined ? prev.verdict : verdict, notes: $("notes").value };
   if (rec.verdict === prev.verdict && rec.notes === prev.notes) return;
   const r = await fetch("/api/label", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(rec) });
   if (!r.ok) { $("saved").textContent = `NOT saved: ${(await r.json()).error}`; return; }
-  labels[t.id] = await r.json();
+  labels[t.key] = await r.json();
   render();
 }
 

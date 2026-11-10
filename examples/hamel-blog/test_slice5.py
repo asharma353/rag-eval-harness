@@ -4,7 +4,7 @@ import os
 import subprocess
 
 from rag_eval import llm
-from rag_eval.monitor import failed_checks, summary
+from hamel.monitor import failed_checks, summary
 
 # summary: a perfect judge leaves the pass rate as it is; out-of-scope questions do not count as declines
 perfect = {"threshold": 0.5, "passes": [0.9] * 10, "fails": [0.1] * 10}

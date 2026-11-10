@@ -12,9 +12,9 @@ from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
-from .bm25 import BM25
+from rag_eval.bm25 import BM25
 from .chunk import index_text, load_chunks
-from .llm import SONNET, claude
+from rag_eval.llm import SONNET, claude
 
 TRACES = Path(__file__).resolve().parent.parent / "traces"
 NO_ANSWER = "The blog posts I have do not answer this."

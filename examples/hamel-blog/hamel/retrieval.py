@@ -25,11 +25,12 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from statistics import mean
 
-from .bm25 import BM25, tokenize
+from rag_eval.bm25 import BM25
 from .chunk import doc_words, index_text, load_chunks, load_docs
 from .corpus import DATA
-from .llm import claude
-from .metrics import ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank
+from rag_eval.llm import claude
+from rag_eval.questions import _norm, confusers, leak, locate, sample_chunks  # noqa: F401  (leak: test_slice3)
+from rag_eval.metrics import ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank
 from .queries import EVALSET, QUERIES, post_outline
 
 PAIRS = EVALSET / "retrieval_pairs.jsonl"
@@ -60,62 +61,14 @@ def slug_of(chunk):
     return chunk["id"].rsplit("#", 1)[0]
 
 
-def _norm(word):
-    return re.sub(r"[^a-z0-9]", "", word.lower())
-
-
-def locate(words, quote, lo=0, hi=None):
-    """Word span [start, end) of quote in words[lo:hi], ignoring case and punctuation. None if absent."""
-    pos = [i for i in range(lo, len(words) if hi is None else hi) if _norm(words[i])]
-    toks = [_norm(words[i]) for i in pos]
-    q = [t for t in map(_norm, quote.split()) if t]
-    for j in range(len(toks) - len(q) + 1 if q else 0):
-        if toks[j : j + len(q)] == q:
-            return pos[j], pos[j + len(q) - 1] + 1
-    return None
-
-
 def fingerprint(words, start, end):
     """Detects a changed post: if Hamel edits it, the stored span no longer points at the evidence."""
     return hashlib.sha1(" ".join(map(_norm, words[start:end])).encode()).hexdigest()[:12]
 
 
-def leak(question, evidence):
-    """Share of the question's search terms that also appear in the evidence."""
-    q = set(tokenize(question))
-    return len(q & set(tokenize(evidence))) / len(q) if q else 0.0
-
-
 def relevant(chunk, pair):
     held = min(chunk["end"], pair["end"]) - max(chunk["start"], pair["start"])
     return slug_of(chunk) == pair["slug"] and 2 * held >= pair["end"] - pair["start"]
-
-
-def sample_chunks(chunks, n, seed=0):
-    """Round-robin over posts, so every post gets questions and not only the long ones."""
-    rng = random.Random(seed)
-    by_post = {}
-    for c in chunks:
-        if c["end"] - c["start"] >= 100:  # skip short tail chunks
-            by_post.setdefault(slug_of(c), []).append(c)
-    for cs in by_post.values():
-        rng.shuffle(cs)
-    picked = []
-    while len(picked) < n and any(by_post.values()):
-        for cs in by_post.values():
-            if cs and len(picked) < n:
-                picked.append(cs.pop())
-    return picked
-
-
-def confusers(chunk, chunks, bm25, n=2):
-    """The n chunks most similar to this one, other than the chunks that overlap it."""
-    out = []
-    for i, _ in bm25.top(chunk["text"], 10):
-        c = chunks[i]
-        if not (slug_of(c) == slug_of(chunk) and c["start"] < chunk["end"] and chunk["start"] < c["end"]):
-            out.append(c)
-    return out[:n]
 
 
 def write_pair(target, others):
@@ -137,7 +90,7 @@ def generate():
     words = {d["slug"]: doc_words(d)[0] for d in load_docs()}
     chunks = load_chunks()
     bm25 = BM25([index_text(c) for c in chunks])
-    jobs = [(c, confusers(c, chunks, bm25) if i % 2 else []) for i, c in enumerate(sample_chunks(chunks, N_CHUNKS))]
+    jobs = [(c, confusers(c, chunks, bm25) if i % 2 else []) for i, c in enumerate(sample_chunks(chunks, N_CHUNKS, min_words=100))]
     with ThreadPoolExecutor(8) as pool:
         results = list(pool.map(lambda job: write_pair(*job), jobs))
 

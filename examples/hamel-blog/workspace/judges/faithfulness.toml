@@ -1,0 +1,13 @@
+# The faithfulness judge of the case study, word for word as validated on 2026-11-03.
+# Its calibration (calibrations/faithfulness.json) comes from the frozen test split; see ../hamel/contract.py.
+name = "faithfulness"
+question = "Do the passages state everything that sentence_to_check claims? Use question and answer_so_far only to understand what the sentence refers to; check only sentence_to_check."
+pass_when = "yes"
+unit = "sentence"
+backend = "jev"
+model = "jev-1.14.0"
+min_rate = 0.90
+
+[criteria]
+pass = "Every fact, name, number, example, reason, recommendation, and qualifier in the sentence is stated in the passages, possibly in other words. Also yes when the sentence makes no claim about the topic, such as saying what the passages do or do not cover. The blog's author is Hamel Husain, so naming him needs no support."
+fail = "The sentence adds something that the passages do not state: a new fact, example, reason, or recommendation, a link between two ideas that the passages do not make, or a claim stronger or broader than the passages make (such as 'always' for 'often', or advice where the passage only reports). A true fact that is not in the passages is still no."

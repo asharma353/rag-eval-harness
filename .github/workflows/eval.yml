@@ -3,8 +3,8 @@ name: eval
 on:
   push:
   pull_request:
-  # The paid gate runs only on a manual start: about $0.73 a run, and it downloads Hamel's blog again.
-  # Start it when a prompt, the retriever, or the model changes.
+  # The paid gate runs only on a manual start: about $0.73 a run, and it downloads the example's blog posts again.
+  # Start it when the example's prompt, retriever, or model changes.
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - name: Offline tests (free, no secrets)
+      - name: General flow (free, no secrets)
+        run: uv run python test_general.py
+      - name: Case study checks (free, no secrets)
+        working-directory: examples/hamel-blog
         run: for t in test_slice*.py; do uv run python "$t"; done
 
   gate:
@@ -26,15 +29,19 @@ jobs:
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
-    # Traces hold Hamel's copyrighted text, so they are never uploaded as an artifact; the log has the report.
+    # Traces hold the blog's copyrighted text, so they are never uploaded as an artifact; the log has the report.
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - name: Download the corpus
-        run: uv run python -m rag_eval.corpus
-      - name: Answer the 109 synthetic questions (about $0.70)
-        run: uv run python -m rag_eval.monitor ask --run ci
+      - name: Download the case study corpus
+        working-directory: examples/hamel-blog
+        run: uv run python -m hamel.corpus
+      - name: Answer the 109 synthetic questions with the reference RAG (about $0.70)
+        working-directory: examples/hamel-blog
+        run: uv run python -m hamel.contract answer --run ci
       - name: Judge the answers with Jev (about $0.03)
-        run: uv run python -m rag_eval.monitor scan --run ci
+        working-directory: examples/hamel-blog/workspace
+        run: uv run rag-eval scan --run ci
       - name: Gate on faithfulness and declines
-        run: uv run python -m rag_eval.monitor gate --run ci
+        working-directory: examples/hamel-blog/workspace
+        run: uv run rag-eval gate --run ci

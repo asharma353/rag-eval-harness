@@ -13,8 +13,8 @@ import urllib.error
 import urllib.request
 
 SONNET = "claude-sonnet-5-5"
-# $ per million tokens (input, output). Sonnet 5 is the server-side fallback target.
-CLAUDE_PRICE = {"claude-sonnet-5-5": (2.00, 10.00), "claude-sonnet-5": (2.00, 10.00)}
+# $ per million tokens (input, output). Sonnet 5 is the server-side fallback target. Haiku: prompts up to 100K tokens.
+CLAUDE_PRICE = {"claude-sonnet-5-5": (2.00, 10.00), "claude-sonnet-5": (2.00, 10.00), "claude-haiku-5-5": (0.10, 0.50)}
 JEV_PRICE = 0.042  # $ per million input tokens; output is free
 RETRY = {429, 500, 502, 503, 529}
 
@@ -47,9 +47,10 @@ def _post(url, headers, body, retries=3):
             raise RuntimeError(f"HTTP {e.code} from {url}: {e.read().decode()[:500]}") from None
 
 
-def claude(system, user, model=SONNET, effort="low", max_tokens=16000, schema=None):
+def claude(system, user, model=SONNET, effort="low", max_tokens=16000, schema=None, fallbacks=True):
     """One Messages API call. Returns text plus everything a trace needs.
-    With a JSON schema, the reply text is guaranteed to parse and match it (structured outputs)."""
+    With a JSON schema, the reply text is guaranteed to parse and match it (structured outputs).
+    fallbacks=False for models without a server-side refusal fallback, such as Haiku 5.5."""
     output_config = {"effort": effort}
     if schema:
         output_config["format"] = {"type": "json_schema", "schema": schema}
@@ -59,15 +60,13 @@ def claude(system, user, model=SONNET, effort="low", max_tokens=16000, schema=No
         "system": system,
         "messages": [{"role": "user", "content": user}],
         "output_config": output_config,
+    }
+    headers = {"x-api-key": _key("anthropic-api-key", "ANTHROPIC_API_KEY"), "anthropic-version": "2026-10-21"}
+    if fallbacks:
         # A safety-classifier decline re-runs on Anthropic's recommended model.
         # The trace records resp["model"], so a fallback is never silent.
-        "fallbacks": "default",
-    }
-    headers = {
-        "x-api-key": _key("anthropic-api-key", "ANTHROPIC_API_KEY"),
-        "anthropic-version": "2026-10-21",
-        "anthropic-beta": "server-side-fallback-2026-07-01",
-    }
+        body["fallbacks"] = "default"
+        headers["anthropic-beta"] = "server-side-fallback-2026-07-01"
     resp, secs = _post("https://api.anthropic.com/v1/messages", headers, body)
     if resp["stop_reason"] == "refusal":
         raise RuntimeError(f"Claude declined: {resp.get('stop_details')}")

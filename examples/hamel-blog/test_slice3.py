@@ -1,9 +1,9 @@
 """Offline checks for slice 3. Run: uv run python test_slice3.py"""
 import math
 
-from rag_eval.chunk import chunk_doc, doc_words
+from hamel.chunk import chunk_doc, doc_words
 from rag_eval.metrics import ndcg_at_k, precision_at_k, recall_at_k, reciprocal_rank
-from rag_eval.retrieval import leak, locate, relevant
+from hamel.retrieval import leak, locate, relevant
 
 # metrics on a ranking whose relevant chunks are at ranks 2 and 4
 rels = [0, 1, 0, 1, 0, 0]

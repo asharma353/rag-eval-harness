@@ -2,7 +2,7 @@
 import math
 from collections import Counter
 
-from rag_eval.judge import bootstrap, corrected_rate, decline_kind, split_labels, split_sentences, sweep, tpr_tnr
+from hamel.judge import bootstrap, corrected_rate, decline_kind, split_labels, split_sentences, sweep, tpr_tnr
 
 # sentences: citations stay with their sentence, list markers go, lines without letters go
 s = split_sentences("Yes. It helps [1][3]. Steps:\n- Run evals [2].\n2. Read traces.\n---\nDone, e.g. now.")

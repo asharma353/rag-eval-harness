@@ -1,0 +1,6 @@
+# These hold your documents' text. Do not commit them to a public repository.
+corpus.jsonl
+questions.jsonl
+traces/
+scores/
+# judges/, labels/ and calibrations/ hold no document text and can be committed.

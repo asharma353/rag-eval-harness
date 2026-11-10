@@ -1,8 +1,8 @@
 """Offline checks for slice 1. Run: uv run python test_slice1.py"""
 from rag_eval.bm25 import BM25
-from rag_eval.chunk import chunk_doc
-from rag_eval.corpus import extract, post_urls
-from rag_eval.rag import build_prompt, parse_citations
+from hamel.chunk import chunk_doc
+from hamel.corpus import extract, post_urls
+from hamel.rag import build_prompt, parse_citations
 
 # extract: title, date, headings marked, title block / scripts / newsletter dropped
 html = """<html><head><meta name="dcterms.date" content="2026-01-02"></head><body>

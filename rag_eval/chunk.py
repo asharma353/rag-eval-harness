@@ -1,17 +1,13 @@
-"""Split posts into fixed-size word windows that overlap.
+"""Split documents into fixed-size word windows that overlap.
 
-Chunk size and overlap are hyperparameters: slice 3 measures Recall@k across a grid of them.
-Each chunk remembers its post title and the nearest heading above its first word, and that
+Each chunk remembers its document title and the nearest heading above its first word, and that
 context goes in front of the chunk text when it is indexed (content-aware chunking).
+A document is {id, source, title, text}; a line that starts with "## " is a section heading.
 """
-import json
-from functools import lru_cache
-
-from .corpus import DATA
 
 
 def doc_words(doc):
-    """The post's words without the heading lines, plus the heading and section number of each word."""
+    """The document's words without the heading lines, plus the heading and section number of each word."""
     words, heads, secs, heading, sec = [], [], [], "", 0
     for line in doc["text"].split("\n"):
         if line.startswith("## "):
@@ -25,9 +21,9 @@ def doc_words(doc):
 
 
 def chunk_doc(doc, size=200, overlap=50, by_section=False):
-    """Word windows over one post. With by_section, no window crosses a heading.
+    """Word windows over one document. With by_section, no window crosses a heading.
 
-    Each chunk keeps its word span [start, end) in the post, so an evidence span can be
+    Each chunk keeps its word span [start, end) in the document, so an evidence span can be
     matched to chunks of any size.
     """
     assert 0 <= overlap < size, "overlap must be smaller than size"
@@ -41,8 +37,8 @@ def chunk_doc(doc, size=200, overlap=50, by_section=False):
         windows += [(s, min(s + size, b)) for s in range(a, max(b - overlap, a + 1), step)]
     return [
         {
-            "id": f"{doc['slug']}#{i:03d}",
-            "url": doc["url"],
+            "id": f"{doc['id']}#{i:03d}",
+            "source": doc["source"],
             "title": doc["title"],
             "heading": heads[s],
             "start": s,
@@ -56,13 +52,3 @@ def chunk_doc(doc, size=200, overlap=50, by_section=False):
 def index_text(chunk):
     """What BM25 sees: title and heading in front of the text."""
     return f"{chunk['title']} | {chunk['heading']}\n{chunk['text']}"
-
-
-def load_docs():
-    with open(DATA / "corpus.jsonl") as f:
-        return [json.loads(line) for line in f]
-
-
-@lru_cache(maxsize=None)
-def load_chunks(size=200, overlap=50, by_section=False):
-    return tuple(c for d in load_docs() for c in chunk_doc(d, size, overlap, by_section))

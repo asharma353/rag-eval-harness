@@ -1,5 +1,7 @@
 # Findings: baseline error analysis
 
+> These are the lab notes of the case study, written while it ran. The commands use the old module paths: in this folder, `rag_eval.<module>` is now `hamel.<module>` (run from `examples/hamel-blog`), and `monitor` is replaced by `hamel.contract` plus `rag-eval scan` and `rag-eval gate` in `workspace/`.
+
 Run `baseline`: 50 questions, BM25 retrieval, top 5 chunks of 200 words with 50 words of overlap, Claude Sonnet 5.5 at effort `low`. Reviewed on 2026-10-29.
 
 ## Result

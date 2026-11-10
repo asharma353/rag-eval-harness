@@ -1,0 +1,15 @@
+# One judge = one yes-or-no question that detects one failure mode.
+# Validate it on your own labels (`rag-eval review`, then `rag-eval validate`) before you trust it.
+# A change to question, pass_when, criteria, unit, backend or model makes a new judge: label checks start again.
+
+name = "faithfulness"
+question = "Do the passages state everything that sentence_to_check claims? Use question and answer_so_far only to understand what the sentence refers to; check only sentence_to_check."
+pass_when = "yes"     # the answer to `question` that means the trace passes
+unit = "sentence"     # "sentence": each sentence is judged, and the answer scores as its weakest one; "answer": one call per answer
+backend = "jev"       # "jev" or "claude"
+model = "jev-1.14.0"  # pinned: a judge's measured accuracy holds only for the model that produced it
+min_rate = 0.90       # the gate fails when the corrected pass rate is below this
+
+[criteria]
+pass = "Every fact, name, number, example, reason, recommendation, and qualifier in the sentence is stated in the passages, possibly in other words. Also yes when the sentence makes no claim about the topic, such as saying what the passages do or do not cover."
+fail = "The sentence adds something that the passages do not state: a new fact, example, reason, or recommendation, a link between two ideas that the passages do not make, or a claim stronger or broader than the passages make (such as 'always' for 'often', or advice where the passage only reports). A true fact that is not in the passages is still no."

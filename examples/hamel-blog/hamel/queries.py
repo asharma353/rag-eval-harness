@@ -15,7 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from .corpus import DATA
-from .llm import claude
+from rag_eval.llm import claude
 from .rag import run_all
 
 EVALSET = Path(__file__).resolve().parent.parent / "evalset"

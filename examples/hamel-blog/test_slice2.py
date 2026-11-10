@@ -2,8 +2,8 @@
 import tempfile
 from pathlib import Path
 
-from rag_eval.queries import HAND, PERSONAS, QUERY_TYPES, SCOPES, TUPLE_SCHEMA
-from rag_eval.review import append_label, load_labels
+from hamel.queries import HAND, PERSONAS, QUERY_TYPES, SCOPES, TUPLE_SCHEMA
+from hamel.review import append_label, load_labels
 
 # hand tuples use only known dimension values, and no tuple repeats
 assert len(HAND) == 20 and len(set(HAND)) == 20
