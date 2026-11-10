@@ -246,6 +246,7 @@ The judge runs as a monitor, not as a guardrail. With TPR 0.89, a guardrail woul
 | loose prompt | 0.65 [0.33, 0.84] | 0.00 | fail: faithfulness below 0.90 |
 | cautious prompt | 0.997 [0.84, 1.00] | 0.17 | fail: declines above 0.15 |
 | ci (new run, clean copy, keys from environment variables) | 1.000 [0.86, 1.00] | 0.08 | pass |
+| ci on GitHub Actions (2026-11-10, run 42846457720) | 0.940 [0.75, 1.00] | 0.11 | pass |
 
 How it works:
 
@@ -258,6 +259,7 @@ Limits:
 
 - The gate uses the point estimate. The lower end of the interval is about 0.83 even for a perfect run, because the test split has only 13 fails.
 - The decline threshold has a small margin: expect a false alarm about 1 run in 20.
-- The workflow has not run on GitHub yet. Each step ran locally, in a clean copy without `data/` or `traces/`, with the macOS Keychain command hidden.
+- The faithfulness check also has a small margin. Three runs of the normal prompt gave 0.995, 1.000 and 0.940, so a run near 0.90 can fail by chance. If the gate fails, read the flagged answers before you trust the result.
+- The workflow ran on GitHub on 2026-11-10 and passed (last row above). Before that, each step ran locally, in a clean copy without `data/` or `traces/`, with the macOS Keychain command hidden.
 
 Check: `test_slice5.py`.
