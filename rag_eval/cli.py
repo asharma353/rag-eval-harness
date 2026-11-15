@@ -93,7 +93,8 @@ def recall(run):
     return out
 
 
-def main(argv=None):
+def run(argv=None):
+    """Run one step and return its result (the tests read it)."""
     ap = argparse.ArgumentParser(prog="rag-eval", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     steps = ap.add_subparsers(dest="step", required=True)
     steps.add_parser("init").add_argument("folder")
@@ -134,6 +135,11 @@ def main(argv=None):
         return J.report(Workspace(), args.run)
     elif args.step == "gate":
         return J.gate(Workspace(), args.run)
+
+
+def main(argv=None):
+    """The `rag-eval` command. It returns None: the console script passes the return value to sys.exit."""
+    run(argv)
 
 
 if __name__ == "__main__":

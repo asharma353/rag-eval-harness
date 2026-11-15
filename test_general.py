@@ -8,7 +8,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from rag_eval.cli import main
+from rag_eval.cli import main, run
 from rag_eval.workspace import Workspace
 
 
@@ -37,11 +37,11 @@ os.chdir(home)
 
 # --- Seam 1 (CLI): init makes a workspace; other steps stop outside one ---
 stops(lambda: Workspace(), "rag-eval.toml", "init")
-main(["init", "ws"])
+run(["init", "ws"])
 ws_dir = home / "ws"
 assert (ws_dir / "rag-eval.toml").exists() and (ws_dir / "judges" / "faithfulness.toml").exists()
 assert "traces/" in (ws_dir / ".gitignore").read_text() and "corpus.jsonl" in (ws_dir / ".gitignore").read_text()
-stops(lambda: main(["init", "ws"]), "ws", "exists")
+stops(lambda: run(["init", "ws"]), "ws", "exists")
 os.chdir(ws_dir)
 ws = Workspace()
 assert [j["name"] for j in ws.judges()] == ["faithfulness"]
@@ -78,7 +78,7 @@ docs = home / "docs"
 (docs / "empty.md").write_text("\n\n")
 (home / "urls.txt").write_text(f"{(docs / 'page.html').as_uri()}\n\n")
 
-main(["add", str(docs)])
+run(["add", str(docs)])
 corpus = {Path(d["source"]).name: d for d in ws.corpus()}
 assert sorted(corpus) == ["guide.md", "notes.txt", "page.html"], sorted(corpus)  # the PNG and the empty file are skipped
 assert corpus["guide.md"]["title"] == "Setup Guide"
@@ -88,13 +88,13 @@ assert corpus["page.html"]["title"] == "Billing FAQ"
 assert corpus["page.html"]["text"] == "## Billing\nPay by card.\n## Refunds\nWithin 30 days.", repr(corpus["page.html"]["text"])
 assert len({d["id"] for d in ws.corpus()}) == 3
 
-main(["add", str(docs / "guide.md"), str(home / "urls.txt")])  # the same file again replaces it; a URL list adds the page
+run(["add", str(docs / "guide.md"), str(home / "urls.txt")])  # the same file again replaces it; a URL list adds the page
 corpus = ws.corpus()
 assert len(corpus) == 4 and sum(d["source"].endswith("guide.md") for d in corpus) == 1
 by_url = [d for d in corpus if d["source"].startswith("file:")]
 assert by_url and by_url[0]["text"] == "## Billing\nPay by card.\n## Refunds\nWithin 30 days."
 
-main(["add", (docs / "gone.html").as_uri()])  # a URL that cannot be fetched is skipped, and the corpus stays as it was
+run(["add", (docs / "gone.html").as_uri()])  # a URL that cannot be fetched is skipped, and the corpus stays as it was
 assert len(ws.corpus()) == 4
 
 # --- Seam 6: generated questions keep only evidence that is really in the corpus ---
@@ -125,11 +125,11 @@ try:
     import pypdf  # noqa: F401
 except ImportError:
     (docs / "scan.pdf").write_bytes(b"%PDF-1.4")
-    stops(lambda: main(["add", str(docs / "scan.pdf")]), "pdf")
+    stops(lambda: run(["add", str(docs / "scan.pdf")]), "pdf")
 
 # --- Seam 1 (CLI): questions --real adds the user's own questions; recall checks the user's retriever ---
 (home / "real.txt").write_text("How do I get a refund?\n\nCan I pay in cash?\n")
-main(["questions", "--n", "0", "--real", str(home / "real.txt")])  # --n 0: no LLM call
+run(["questions", "--n", "0", "--real", str(home / "real.txt")])  # --n 0: no LLM call
 assert [(q["qid"], q["style"], q["evidence"]) for q in ws.questions()] == [("r001", "real", None), ("r002", "real", None)]
 
 ws.write_questions([
@@ -144,7 +144,10 @@ write_jsonl(ws_dir / "traces" / "r.jsonl", [
     trace(3, qid="r001", passages=[p("Cash is fine.")]),                                        # no evidence: not counted
     trace(4, passages=[p("x")]),                                                                # no qid: not counted
 ])
-r = main(["recall", "--run", "r"])
+r = run(["recall", "--run", "r"])
+# The `rag-eval` console script passes main()'s return value to sys.exit, so main() must return None:
+# a step that returns a count or a dict would end with a nonzero exit code.
+assert main(["recall", "--run", "r"]) is None
 assert r == {"plain": {1: 1.0, 3: 1.0, 5: 1.0, "all": 1.0, "n": 1}, "adversarial": {1: 0.0, 3: 1.0, 5: 1.0, "all": 1.0, "n": 1},
              "all": {1: 0.5, 3: 1.0, 5: 1.0, "all": 1.0, "n": 2}}, r
 
@@ -168,7 +171,7 @@ def edit(path, old, new):
 
 
 os.chdir(home)
-main(["init", "jw"])
+run(["init", "jw"])
 jw = home / "jw"
 os.chdir(jw)
 edit(jw / "judges" / "faithfulness.toml", 'backend = "jev"', 'backend = "stub"')
@@ -198,13 +201,13 @@ jws = Workspace()
 for t, verdict, _ in lab:
     jws.add_label("faithfulness", {"run": "lab", "trace_id": t, "verdict": verdict, "notes": ""})
 
-stops(lambda: main(["validate", "--judge", "faithfulness", "--part", "test"]), "--part dev")
-dev = main(["validate", "--judge", "faithfulness", "--part", "dev"])
+stops(lambda: run(["validate", "--judge", "faithfulness", "--part", "test"]), "--part dev")
+dev = run(["validate", "--judge", "faithfulness", "--part", "dev"])
 assert (dev["tpr"], dev["tnr"]) == (1.0, 1.0) and dev["n_pass"] == 6 and dev["n_fail"] == 4
-test = main(["validate", "--judge", "faithfulness", "--part", "test"])
+test = run(["validate", "--judge", "faithfulness", "--part", "test"])
 assert (round(test["tpr"], 6), round(test["tnr"], 6)) == (0.8, 0.7) and (test["n_pass"], test["n_fail"]) == (10, 10)
-stops(lambda: main(["validate", "--judge", "faithfulness", "--part", "test"]), "already")
-stops(lambda: main(["validate", "--judge", "faithfulness", "--part", "dev"]), "already")
+stops(lambda: run(["validate", "--judge", "faithfulness", "--part", "test"]), "already")
+stops(lambda: run(["validate", "--judge", "faithfulness", "--part", "dev"]), "already")
 cal = jws.calibration("faithfulness")
 assert cal["tpr"] == test["tpr"] and len(cal["passes"]) == 10 and len(cal["fails"]) == 10 and cal["tested_at"]
 
@@ -223,10 +226,10 @@ assert J.STUB_SEEN[1]["answer_so_far"] == "First claim [2]." and J.STUB_SEEN[0][
 # corrected faithfulness (0.7 + 0.7 - 1) / (0.8 + 0.7 - 1) = 0.8.
 prod = [trace(n, answer_of["ok" if n < 7 else "bad"]) for n in range(10)] + [trace(10, "I don't know."), trace(11, declined=True)]
 write_jsonl(jw / "traces" / "prod.jsonl", prod)
-stops(lambda: main(["report", "--run", "prod"]), "scan")
-assert main(["scan", "--run", "prod"]) == 10, "declined traces are not judged"
-assert main(["scan", "--run", "prod"]) == 0, "a second scan finds nothing new"
-failed = main(["report", "--run", "prod"])
+stops(lambda: run(["report", "--run", "prod"]), "scan")
+assert run(["scan", "--run", "prod"]) == 10, "declined traces are not judged"
+assert run(["scan", "--run", "prod"]) == 0, "a second scan finds nothing new"
+failed = run(["report", "--run", "prod"])
 assert len(failed) == 2 and "faithfulness" in failed[0] and "0.800" in failed[0] and "decline" in failed[1] and "0.167" in failed[1], failed
 assert gate_code(["gate", "--run", "prod"]) == 1
 
@@ -239,27 +242,27 @@ assert gate_code(["gate", "--run", "prod"]) == 0
 (jw / "judges" / "upsell.toml").write_text(
     'name = "upsell"\nquestion = "Does the answer push the user to buy something?"\npass_when = "no"\nunit = "answer"\n'
     'backend = "stub"\nmin_rate = 0.5\n[criteria]\npass = "No sales push."\nfail = "A sales push."\n')
-stops(lambda: main(["report", "--run", "prod"]), "scan", "upsell")
-assert main(["scan", "--run", "prod"]) == 10
-assert main(["report", "--run", "prod"]) == [], "raw rate 0.3 is below 0.5, but an uncalibrated judge does not fail the gate"
-assert main(["scan", "--run", "prod", "--judge", "upsell"]) == 0
+stops(lambda: run(["report", "--run", "prod"]), "scan", "upsell")
+assert run(["scan", "--run", "prod"]) == 10
+assert run(["report", "--run", "prod"]) == [], "raw rate 0.3 is below 0.5, but an uncalibrated judge does not fail the gate"
+assert run(["scan", "--run", "prod", "--judge", "upsell"]) == 0
 
 # A changed question is a new judge: old scores and the calibration no longer count.
 edit(jw / "judges" / "faithfulness.toml", "check only sentence_to_check.", "check only sentence_to_check, nothing else.")
-stops(lambda: main(["report", "--run", "prod"]), "scan", "faithfulness")
-main(["scan", "--run", "prod"])
-assert main(["report", "--run", "prod"]) == []
-stops(lambda: main(["validate", "--judge", "faithfulness", "--part", "test"]), "--part dev")
+stops(lambda: run(["report", "--run", "prod"]), "scan", "faithfulness")
+run(["scan", "--run", "prod"])
+assert run(["report", "--run", "prod"]) == []
+stops(lambda: run(["validate", "--judge", "faithfulness", "--part", "test"]), "--part dev")
 
 # Two runs can use the same trace id (the AGENTS.md glue uses the qid). Each labeled trace keeps its own score.
 (jw / "judges" / "dup.toml").write_text(
     'name = "dup"\nquestion = "Is the answer right?"\npass_when = "yes"\nunit = "answer"\nbackend = "stub"\n'
     '[criteria]\npass = "Right."\nfail = "Wrong."\n')
 dev_runs = [r for r in (f"x{n}" for n in range(200)) if J.split_of(r, "same") == "dev"][:2]
-for run, answer, verdict in zip(dev_runs, ["Fine.", "WRONG."], ["pass", "fail"]):
-    write_jsonl(jw / "traces" / f"{run}.jsonl", [trace(0, answer) | {"id": "same"}])
-    jws.add_label("dup", {"run": run, "trace_id": "same", "verdict": verdict, "notes": ""})
-dup = main(["validate", "--judge", "dup", "--part", "dev"])
+for rn, answer, verdict in zip(dev_runs, ["Fine.", "WRONG."], ["pass", "fail"]):
+    write_jsonl(jw / "traces" / f"{rn}.jsonl", [trace(0, answer) | {"id": "same"}])
+    jws.add_label("dup", {"run": rn, "trace_id": "same", "verdict": verdict, "notes": ""})
+dup = run(["validate", "--judge", "dup", "--part", "dev"])
 assert (dup["tpr"], dup["tnr"]) == (1.0, 1.0), dup
 
 # --- Seam 5: Hamel parity. The general code, given the frozen test scores, gives the published TPR and TNR. ---
